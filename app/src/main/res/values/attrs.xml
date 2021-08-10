@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PlusScreenButtonView">
+        <attr name="description" format="string"/>
+        <attr name="imageDescription" format="integer"/>
+        <attr name="android:drawable"/>
+    </declare-styleable>
+</resources>
