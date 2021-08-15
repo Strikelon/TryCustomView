@@ -6,26 +6,23 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.example.trycustomview.view.SwagPoints
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        app:max="100"
-        app:min="0"
-        app:step="1"
-        app:points="25"
-        app:indicatorIcon="@drawable/border"
-        app:progressWidth="4dp"
-        app:arcWidth="2dp"
-        app:progressColor="@android:color/holo_green_dark"
-        app:arcColor="@android:color/black"
-        app:textSize="23sp"
-        app:textColor="@android:color/holo_red_dark"
-        app:clockwise="true"
-        app:enabled="true"
-        android:padding="28dp"
+    <com.example.trycustomview.view.ProgressButtonView
+        android:layout_width="0dp"
+        android:layout_height="49dp"
+        app:drawableBackground="@drawable/blue_gray_border"
+        app:drawableProgress="@drawable/progress_border_sea_white"
+        app:maxProgress="100"
+        app:currentProgress="20"
+        app:progressText="Client Absent (08:40)"
+        app:progressTextSize="16sp"
+        app:progressTextStyle="bold"
+        app:progressTextOnBackgroundColor="@color/white"
+        app:progressTextOnProgressColor="@color/sea_wave_color"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

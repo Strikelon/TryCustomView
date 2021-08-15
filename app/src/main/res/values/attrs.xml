@@ -40,4 +40,20 @@
         <attr name="clockwise" format="boolean" />
         <attr name="enabled" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="ProgressButtonView">
+        <attr name="drawableBackground" format="reference" />
+        <attr name="drawableProgress" format="reference" />
+        <attr name="maxProgress" format="integer" />
+        <attr name="currentProgress" format="integer" />
+        <attr name="progressText" format="string"/>
+        <attr name="progressTextSize" format="dimension"/>
+        <attr name="progressTextOnBackgroundColor" format="color"/>
+        <attr name="progressTextOnProgressColor" format="color"/>
+        <attr name="progressTextStyle" format="enum">
+            <enum name="normal" value="0"/>
+            <enum name="bold" value="1"/>
+            <enum name="italic" value="2"/>
+        </attr>
+    </declare-styleable>
 </resources>
