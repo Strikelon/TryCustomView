@@ -12,7 +12,7 @@
         app:drawableBackground="@drawable/blue_gray_border"
         app:drawableProgress="@drawable/progress_border_sea_white"
         app:maxProgress="100"
-        app:currentProgress="20"
+        app:currentProgress="50"
         app:progressText="Client Absent (08:40)"
         app:progressTextSize="16sp"
         app:progressTextStyle="bold"

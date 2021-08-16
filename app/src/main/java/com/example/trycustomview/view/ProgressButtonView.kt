@@ -1,5 +1,6 @@
 package com.example.trycustomview.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -22,7 +23,6 @@ class ProgressButtonView @JvmOverloads constructor(
         private const val DEFAULT_PROGRESS_TEXT = ""
         private const val DEFAULT_TEXT_SIZE = 30f
         private const val DEFAULT_TEXT_COLOR = Color.BLACK
-        private const val DEFAULT_ID = 0
     }
 
     private var drawableBackground: Drawable? = null
@@ -123,6 +123,7 @@ class ProgressButtonView @JvmOverloads constructor(
         drawableBackground?.setBounds(DEFAULT_X, DEFAULT_Y, width, height)
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
         drawableBackground?.draw(canvas)
 
@@ -134,10 +135,24 @@ class ProgressButtonView @JvmOverloads constructor(
         }
 
         paintProgressTextOnBackground.getTextBounds(progressText, 0, progressText.length, progressTextOnBackgroundRect)
-        val xPos = (width / 2 - progressTextOnBackgroundRect.width() / 2).toFloat()
-        val yPos = (height / 2 - ((paintProgressTextOnBackground.descent() + paintProgressTextOnBackground.ascent()) / 2))
+        val progressTextXPos = (width / 2 - progressTextOnBackgroundRect.width() / 2).toFloat()
+        val progressTextYPos = (height / 2 - ((paintProgressTextOnBackground.descent() + paintProgressTextOnBackground.ascent()) / 2))
+        canvas.drawText(progressText, progressTextXPos, progressTextYPos, paintProgressTextOnBackground)
 
-        canvas.drawText(progressText, xPos, yPos, paintProgressTextOnBackground)
+        Log.i("InteresTag","progressWidth() = $progressWidth")
+        Log.i("InteresTag","progressTextXPos = $progressTextXPos")
+        val availableProgressTextLength = progressWidth - progressTextXPos
+        Log.i("InteresTag", "availableProgressTextLength = $availableProgressTextLength")
+
+        if (progressWidth > 0) {
+            val textWidths = Array(progressText.length){0f}.toFloatArray()
+            paintProgressTextOnProgress.getTextWidths(progressText, textWidths)
+            val symbolsCount = calculateSymbolsCount(textWidths, availableProgressTextLength)
+            Log.i("InteresTag", "symbolsCount = $symbolsCount")
+            if (symbolsCount > 0) {
+                canvas.drawText(getCroppedText(progressText, symbolsCount), progressTextXPos, progressTextYPos, paintProgressTextOnProgress)
+            }
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -161,6 +176,24 @@ class ProgressButtonView @JvmOverloads constructor(
             ProgressTextStyle.BOLD -> Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             ProgressTextStyle.ITALIC -> Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
         }
+    }
+
+    private fun calculateSymbolsCount(widthList: FloatArray, availableTextLength: Float): Int {
+        var textLength = availableTextLength
+        var symbolsCount = 0
+        widthList.forEach { symbolWidth ->
+            if (textLength > (symbolWidth / 2)) {
+                textLength -= symbolWidth
+                symbolsCount++
+            } else {
+                return symbolsCount
+            }
+        }
+        return symbolsCount
+    }
+
+    private fun getCroppedText(text: String, symbolsCount: Int): String {
+        return text.substring(0, symbolsCount)
     }
 
     enum class ProgressTextStyle {
