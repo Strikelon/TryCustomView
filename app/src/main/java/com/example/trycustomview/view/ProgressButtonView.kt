@@ -1,5 +1,6 @@
 package com.example.trycustomview.view
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
@@ -7,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import com.example.trycustomview.R
 
 class ProgressButtonView @JvmOverloads constructor(
@@ -31,8 +33,8 @@ class ProgressButtonView @JvmOverloads constructor(
     private var maxProgress: Int = DEFAULT_MAX_PROGRESS
     private var currentProgress: Int = DEFAULT_CURRENT_PROGRESS
 
-    private var progressText : String = DEFAULT_PROGRESS_TEXT
-    private var progressTextStyle : ProgressTextStyle = ProgressTextStyle.NORMAL
+    private var progressText: String = DEFAULT_PROGRESS_TEXT
+    private var progressTextStyle: ProgressTextStyle = ProgressTextStyle.NORMAL
     private var progressTextSize: Float = DEFAULT_TEXT_SIZE
     private var progressTextOnBackgroundColor = DEFAULT_TEXT_COLOR
     private var progressTextOnProgressColor = DEFAULT_TEXT_COLOR
@@ -51,21 +53,48 @@ class ProgressButtonView @JvmOverloads constructor(
         setupAttrs(context, attributeSet, defStyleAttrs, defStyleRes = 0)
     }
 
-    private fun setupAttrs(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ProgressButtonView, defStyleAttr, defStyleRes)
+    private fun setupAttrs(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+        defStyleRes: Int
+    ) {
+        val typedArray = context.obtainStyledAttributes(
+            attrs,
+            R.styleable.ProgressButtonView,
+            defStyleAttr,
+            defStyleRes
+        )
 
-        drawableBackground = typedArray.getDrawable(R.styleable.ProgressButtonView_drawableBackground)
+        drawableBackground =
+            typedArray.getDrawable(R.styleable.ProgressButtonView_drawableBackground)
         drawableProgress = typedArray.getDrawable(R.styleable.ProgressButtonView_drawableProgress)
 
-        maxProgress = typedArray.getInteger(R.styleable.ProgressButtonView_maxProgress, DEFAULT_MAX_PROGRESS)
-        currentProgress = typedArray.getInteger(R.styleable.ProgressButtonView_currentProgress, DEFAULT_CURRENT_PROGRESS)
+        maxProgress =
+            typedArray.getInteger(R.styleable.ProgressButtonView_maxProgress, DEFAULT_MAX_PROGRESS)
+        currentProgress = typedArray.getInteger(
+            R.styleable.ProgressButtonView_currentProgress,
+            DEFAULT_CURRENT_PROGRESS
+        )
         currentProgress = checkAndFixCurrentProgress(currentProgress)
 
         progressText = typedArray.getText(R.styleable.ProgressButtonView_progressText).toString()
-        progressTextSize = typedArray.getDimension(R.styleable.ProgressButtonView_progressTextSize, DEFAULT_TEXT_SIZE)
-        progressTextOnBackgroundColor = typedArray.getColor(R.styleable.ProgressButtonView_progressTextOnBackgroundColor, DEFAULT_TEXT_COLOR)
-        progressTextOnProgressColor = typedArray.getColor(R.styleable.ProgressButtonView_progressTextOnProgressColor, DEFAULT_TEXT_COLOR)
-        progressTextStyle = ProgressTextStyle.values()[typedArray.getInt(R.styleable.ProgressButtonView_progressTextStyle, ProgressTextStyle.NORMAL.ordinal)]
+        progressTextSize = typedArray.getDimension(
+            R.styleable.ProgressButtonView_progressTextSize,
+            DEFAULT_TEXT_SIZE
+        )
+        progressTextOnBackgroundColor = typedArray.getColor(
+            R.styleable.ProgressButtonView_progressTextOnBackgroundColor,
+            DEFAULT_TEXT_COLOR
+        )
+        progressTextOnProgressColor = typedArray.getColor(
+            R.styleable.ProgressButtonView_progressTextOnProgressColor,
+            DEFAULT_TEXT_COLOR
+        )
+        progressTextStyle = ProgressTextStyle.values()[typedArray.getInt(
+            R.styleable.ProgressButtonView_progressTextStyle,
+            ProgressTextStyle.NORMAL.ordinal
+        )]
 
         with(paintProgressTextOnBackground) {
             textSize = progressTextSize
@@ -84,7 +113,7 @@ class ProgressButtonView @JvmOverloads constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        Log.i("InteresTag","onAttachedToWindow()")
+        Log.i("InteresTag", "onAttachedToWindow()")
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -134,30 +163,46 @@ class ProgressButtonView @JvmOverloads constructor(
             drawableProgressNotNull.draw(canvas)
         }
 
-        paintProgressTextOnBackground.getTextBounds(progressText, 0, progressText.length, progressTextOnBackgroundRect)
+        paintProgressTextOnBackground.getTextBounds(
+            progressText,
+            0,
+            progressText.length,
+            progressTextOnBackgroundRect
+        )
         val progressTextXPos = (width / 2 - progressTextOnBackgroundRect.width() / 2).toFloat()
-        val progressTextYPos = (height / 2 - ((paintProgressTextOnBackground.descent() + paintProgressTextOnBackground.ascent()) / 2))
-        canvas.drawText(progressText, progressTextXPos, progressTextYPos, paintProgressTextOnBackground)
+        val progressTextYPos =
+            (height / 2 - ((paintProgressTextOnBackground.descent() + paintProgressTextOnBackground.ascent()) / 2))
+        canvas.drawText(
+            progressText,
+            progressTextXPos,
+            progressTextYPos,
+            paintProgressTextOnBackground
+        )
 
-        Log.i("InteresTag","progressWidth() = $progressWidth")
-        Log.i("InteresTag","progressTextXPos = $progressTextXPos")
+        Log.i("InteresTag", "progressWidth() = $progressWidth")
+        Log.i("InteresTag", "progressTextXPos = $progressTextXPos")
         val availableProgressTextLength = progressWidth - progressTextXPos
         Log.i("InteresTag", "availableProgressTextLength = $availableProgressTextLength")
 
         if (progressWidth > 0) {
-            val textWidths = Array(progressText.length){0f}.toFloatArray()
+            val textWidths = Array(progressText.length) { 0f }.toFloatArray()
             paintProgressTextOnProgress.getTextWidths(progressText, textWidths)
             val symbolsCount = calculateSymbolsCount(textWidths, availableProgressTextLength)
             Log.i("InteresTag", "symbolsCount = $symbolsCount")
             if (symbolsCount > 0) {
-                canvas.drawText(getCroppedText(progressText, symbolsCount), progressTextXPos, progressTextYPos, paintProgressTextOnProgress)
+                canvas.drawText(
+                    getCroppedText(progressText, symbolsCount),
+                    progressTextXPos,
+                    progressTextYPos,
+                    paintProgressTextOnProgress
+                )
             }
         }
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        Log.i("InteresTag","onDetachedFromWindow()")
+        Log.i("InteresTag", "onDetachedFromWindow()")
     }
 
     private fun getProgressWidth(width: Int): Int {
@@ -194,6 +239,32 @@ class ProgressButtonView @JvmOverloads constructor(
 
     private fun getCroppedText(text: String, symbolsCount: Int): String {
         return text.substring(0, symbolsCount)
+    }
+
+    fun setTextProgress(text: String) {
+        progressText = text
+        invalidate()
+    }
+
+    fun setProgress(progress: Int) {
+        currentProgress = checkAndFixCurrentProgress(progress)
+        invalidate()
+    }
+
+    fun setAnimateProgress(progress: Int, animateDuration: Long) {
+        val current = currentProgress / progress.toFloat()
+        val barAnimator = ValueAnimator.ofFloat(current, 1f).apply {
+            duration = animateDuration
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animation ->
+                val interpolation = animation.animatedValue as Float
+                Log.i("InteresTag","interpolation = $interpolation")
+                setProgress((interpolation * progress).toInt())
+            }
+        }
+        if (!barAnimator.isStarted) {
+            barAnimator.start()
+        }
     }
 
     enum class ProgressTextStyle {

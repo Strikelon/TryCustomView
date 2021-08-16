@@ -6,13 +6,38 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/changeTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/changeProgressButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Progress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changeTextButton" />
+
+    <Button
+        android:id="@+id/changeProgressAnimate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Progress Animate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changeProgressButton" />
+
     <com.example.trycustomview.view.ProgressButtonView
+        android:id="@+id/progressButtonView"
         android:layout_width="0dp"
         android:layout_height="49dp"
         app:drawableBackground="@drawable/blue_gray_border"
         app:drawableProgress="@drawable/progress_border_sea_white"
         app:maxProgress="100"
-        app:currentProgress="50"
+        app:currentProgress="100"
         app:progressText="Client Absent (08:40)"
         app:progressTextSize="16sp"
         app:progressTextStyle="bold"
@@ -21,6 +46,8 @@
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
