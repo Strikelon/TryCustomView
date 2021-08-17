@@ -69,6 +69,8 @@ class ProgressButtonView @JvmOverloads constructor(
     private var rippleEffectRadius = 0f
     private var rippleEffectRadiusMax = 0f
 
+    private var clickListener: OnClickListener? = null
+
     init {
         setupAttrs(context, attributeSet, defStyleAttrs, defStyleRes = 0)
     }
@@ -330,8 +332,14 @@ class ProgressButtonView @JvmOverloads constructor(
         }
     }
 
+    override fun setOnClickListener(l: OnClickListener?) {
+        clickListener = l
+        super.setOnClickListener(l)
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
+            clickListener?.onClick(this)
             startRippleEffectClick(event.x, event.y)
         }
         return false
