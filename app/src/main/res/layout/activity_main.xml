@@ -30,19 +30,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/changeProgressButton" />
 
-    <com.example.trycustomview.view.ProgressButtonView
+r    <com.example.trycustomview.view.ProgressButtonView
         android:id="@+id/progressButtonView"
         android:layout_width="0dp"
         android:layout_height="49dp"
         app:drawableBackground="@drawable/blue_gray_border"
         app:drawableProgress="@drawable/progress_border_sea_white"
         app:maxProgress="100"
-        app:currentProgress="100"
+        app:currentProgress="50"
         app:progressText="Client Absent (08:40)"
         app:progressTextSize="16sp"
         app:progressTextStyle="bold"
         app:progressTextOnBackgroundColor="@color/white"
         app:progressTextOnProgressColor="@color/sea_wave_color"
+        app:rippleEffectColor="@color/ripple_effect_gray_color"
         android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="20dp"

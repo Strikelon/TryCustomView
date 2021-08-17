@@ -50,6 +50,8 @@
         <attr name="progressTextSize" format="dimension"/>
         <attr name="progressTextOnBackgroundColor" format="color"/>
         <attr name="progressTextOnProgressColor" format="color"/>
+        <attr name="rippleEffectColor" format="color"/>
+        <attr name="useTextOnProgress" format="boolean"/>
         <attr name="progressTextStyle" format="enum">
             <enum name="normal" value="0"/>
             <enum name="bold" value="1"/>

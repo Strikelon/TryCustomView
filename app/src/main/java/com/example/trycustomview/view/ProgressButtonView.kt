@@ -7,6 +7,7 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import com.example.trycustomview.R
@@ -14,7 +15,7 @@ import com.example.trycustomview.R
 class ProgressButtonView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
-    defStyleAttrs: Int = 0,
+    defStyleAttrs: Int = 0
 ) : View(context, attributeSet, defStyleAttrs) {
 
     companion object {
@@ -25,6 +26,10 @@ class ProgressButtonView @JvmOverloads constructor(
         private const val DEFAULT_PROGRESS_TEXT = ""
         private const val DEFAULT_TEXT_SIZE = 30f
         private const val DEFAULT_TEXT_COLOR = Color.BLACK
+        private const val DEFAULT_RIPPLE_EFFECT_COLOR = Color.GRAY
+        private const val DEFAULT_BOOLEAN = true
+        private const val DEFAULT_RIPPLE_EFFECT_STEP_COUNT = 20f
+        private const val DEFAULT_RIPPLE_EFFECT_RATIO = 0.5f
     }
 
     private var drawableBackground: Drawable? = null
@@ -38,6 +43,8 @@ class ProgressButtonView @JvmOverloads constructor(
     private var progressTextSize: Float = DEFAULT_TEXT_SIZE
     private var progressTextOnBackgroundColor = DEFAULT_TEXT_COLOR
     private var progressTextOnProgressColor = DEFAULT_TEXT_COLOR
+    private var isUseTextOnProgress = DEFAULT_BOOLEAN
+    private var rippleEffectColor = DEFAULT_RIPPLE_EFFECT_COLOR
 
     private val paintProgressTextOnBackground = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         isAntiAlias = true
@@ -47,7 +54,20 @@ class ProgressButtonView @JvmOverloads constructor(
         isAntiAlias = true
     }
 
+    private val paintRippleEffectPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        isAntiAlias = true
+        style = Paint.Style.FILL
+    }
+
     private var progressTextOnBackgroundRect = Rect()
+    private var progressAnimator: ValueAnimator? = null
+    private var isClicked = false
+    private var isDrawRippleEffect = false
+
+    private var rippleEffectX = 0f
+    private var rippleEffectY = 0f
+    private var rippleEffectRadius = 0f
+    private var rippleEffectRadiusMax = 0f
 
     init {
         setupAttrs(context, attributeSet, defStyleAttrs, defStyleRes = 0)
@@ -96,6 +116,10 @@ class ProgressButtonView @JvmOverloads constructor(
             ProgressTextStyle.NORMAL.ordinal
         )]
 
+        isUseTextOnProgress = typedArray.getBoolean(R.styleable.ProgressButtonView_useTextOnProgress, DEFAULT_BOOLEAN)
+
+        rippleEffectColor = typedArray.getColor(R.styleable.ProgressButtonView_rippleEffectColor, DEFAULT_RIPPLE_EFFECT_COLOR)
+
         with(paintProgressTextOnBackground) {
             textSize = progressTextSize
             color = progressTextOnBackgroundColor
@@ -107,6 +131,8 @@ class ProgressButtonView @JvmOverloads constructor(
             color = progressTextOnProgressColor
             setTypeface(getTextTypeFace(progressTextStyle))
         }
+
+        paintRippleEffectPaint.color = rippleEffectColor
 
         typedArray.recycle()
     }
@@ -126,6 +152,7 @@ class ProgressButtonView @JvmOverloads constructor(
         val width = measureDimension(desiredWidth, widthMeasureSpec)
         val height = measureDimension(desiredHeight, heightMeasureSpec)
 
+        updateRippleEffectRadius(width)
         updateDrawableBackgroundBounds(width, height)
         setMeasuredDimension(width, height)
     }
@@ -148,19 +175,23 @@ class ProgressButtonView @JvmOverloads constructor(
         return result
     }
 
+    private fun updateRippleEffectRadius(width: Int) {
+        rippleEffectRadiusMax = width * DEFAULT_RIPPLE_EFFECT_RATIO
+    }
+
     private fun updateDrawableBackgroundBounds(width: Int, height: Int) {
         drawableBackground?.setBounds(DEFAULT_X, DEFAULT_Y, width, height)
     }
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
-        drawableBackground?.draw(canvas)
 
-        val progressWidth = getProgressWidth(width)
+        drawDrawableBackground(canvas)
 
-        drawableProgress?.let { drawableProgressNotNull ->
-            drawableProgressNotNull.setBounds(DEFAULT_X, DEFAULT_Y, progressWidth, height)
-            drawableProgressNotNull.draw(canvas)
+        drawDrawableProgress(width, height, canvas)
+
+        if (isDrawRippleEffect) {
+            drawRippleEffect(rippleEffectX, rippleEffectY, canvas)
         }
 
         paintProgressTextOnBackground.getTextBounds(
@@ -170,8 +201,8 @@ class ProgressButtonView @JvmOverloads constructor(
             progressTextOnBackgroundRect
         )
         val progressTextXPos = (width / 2 - progressTextOnBackgroundRect.width() / 2).toFloat()
-        val progressTextYPos =
-            (height / 2 - ((paintProgressTextOnBackground.descent() + paintProgressTextOnBackground.ascent()) / 2))
+        val progressTextYPos = (height / 2 - ((paintProgressTextOnBackground.descent()
+                + paintProgressTextOnBackground.ascent()) / 2))
         canvas.drawText(
             progressText,
             progressTextXPos,
@@ -179,12 +210,14 @@ class ProgressButtonView @JvmOverloads constructor(
             paintProgressTextOnBackground
         )
 
+        val progressWidth = getProgressWidth(width)
+
         Log.i("InteresTag", "progressWidth() = $progressWidth")
         Log.i("InteresTag", "progressTextXPos = $progressTextXPos")
         val availableProgressTextLength = progressWidth - progressTextXPos
         Log.i("InteresTag", "availableProgressTextLength = $availableProgressTextLength")
 
-        if (progressWidth > 0) {
+        if (progressWidth > 0 && isUseTextOnProgress) {
             val textWidths = Array(progressText.length) { 0f }.toFloatArray()
             paintProgressTextOnProgress.getTextWidths(progressText, textWidths)
             val symbolsCount = calculateSymbolsCount(textWidths, availableProgressTextLength)
@@ -197,6 +230,31 @@ class ProgressButtonView @JvmOverloads constructor(
                     paintProgressTextOnProgress
                 )
             }
+        }
+    }
+
+    private fun drawDrawableBackground(canvas: Canvas) {
+        drawableBackground?.draw(canvas)
+    }
+
+    private fun drawDrawableProgress(width: Int, height: Int, canvas: Canvas) {
+        val progressWidth = getProgressWidth(width)
+        drawableProgress?.let { drawableProgressNotNull ->
+            drawableProgressNotNull.setBounds(DEFAULT_X, DEFAULT_Y, progressWidth, height)
+            drawableProgressNotNull.draw(canvas)
+        }
+    }
+
+    private fun drawRippleEffect(x: Float, y: Float, canvas: Canvas) {
+        canvas.drawCircle(x, y, rippleEffectRadius, paintRippleEffectPaint)
+
+        if (rippleEffectRadius <= rippleEffectRadiusMax) {
+            rippleEffectRadius += rippleEffectRadiusMax / DEFAULT_RIPPLE_EFFECT_STEP_COUNT
+            invalidate()
+        } else {
+            rippleEffectRadius = 0F
+            isDrawRippleEffect = false
+            invalidate()
         }
     }
 
@@ -247,24 +305,45 @@ class ProgressButtonView @JvmOverloads constructor(
     }
 
     fun setProgress(progress: Int) {
+        if (isClicked) {
+            return
+        }
         currentProgress = checkAndFixCurrentProgress(progress)
         invalidate()
     }
 
     fun setAnimateProgress(progress: Int, animateDuration: Long) {
         val current = currentProgress / progress.toFloat()
-        val barAnimator = ValueAnimator.ofFloat(current, 1f).apply {
+        progressAnimator = ValueAnimator.ofFloat(current, 1f).apply {
             duration = animateDuration
             interpolator = DecelerateInterpolator()
             addUpdateListener { animation ->
                 val interpolation = animation.animatedValue as Float
-                Log.i("InteresTag","interpolation = $interpolation")
+                Log.i("InteresTag", "interpolation = $interpolation")
                 setProgress((interpolation * progress).toInt())
             }
         }
-        if (!barAnimator.isStarted) {
-            barAnimator.start()
+        progressAnimator?.let { progressAnimatorNotNull ->
+            if (!progressAnimatorNotNull.isStarted && !isClicked) {
+                progressAnimatorNotNull.start()
+            }
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            startRippleEffectClick(event.x, event.y)
+        }
+        return false
+    }
+
+    private fun startRippleEffectClick(x: Float, y: Float) {
+        Log.i("InteresTag", "[ProgressButtonView] click x = $x, y = $y")
+        isClicked = true
+        isDrawRippleEffect = true
+        rippleEffectX = x
+        rippleEffectY = y
+        invalidate()
     }
 
     enum class ProgressTextStyle {
